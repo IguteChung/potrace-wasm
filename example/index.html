@@ -1,0 +1,15 @@
+<html>
+  <body>
+    <script src="potrace.js"></script>
+    <script>
+      Module.onRuntimeInitialized = function() {
+        let getSVG = Module.cwrap("convert_svg", "string", [
+          "array",
+          "number",
+          "number"
+        ]);
+        console.log(getSVG([1, 3, 5, 7], 2, 2));
+      };
+    </script>
+  </body>
+</html>
