@@ -2,14 +2,47 @@
   <body>
     <script src="potrace.js"></script>
     <script>
-      Module.onRuntimeInitialized = function() {
-        let getSVG = Module.cwrap("convert_svg", "string", [
+      let imgElement = document.createElement("img"),
+        imgCanvas = document.createElement("canvas");
+
+      function drawSVG(svg) {
+        var parser = new DOMParser();
+        var dom = parser.parseFromString(svg, "text/xml");
+        document.body.appendChild(document.createElement("br"));
+        document.body.appendChild(dom.documentElement);
+      }
+
+      function wasmReady() {
+        imgElement.onload = imgOnload;
+        imgElement.src = "kana.png";
+      }
+
+      function imgOnload() {
+        imgCanvas.width = imgElement.width;
+        imgCanvas.height = imgElement.height;
+        var ctx = imgCanvas.getContext("2d");
+        ctx.drawImage(imgElement, 0, 0);
+        document.body.appendChild(imgCanvas);
+
+        let imagedata = ctx.getImageData(
+          0,
+          0,
+          imgCanvas.width,
+          imgCanvas.height
+        );
+
+        let convertSVG = Module.cwrap("convert_svg", "string", [
           "array",
           "number",
           "number"
         ]);
-        console.log(getSVG([1, 3, 5, 7], 2, 2));
-      };
+        let svg = convertSVG(imagedata.data, imgCanvas.width, imgCanvas.height);
+        console.log("js receives:", svg);
+
+        drawSVG(svg);
+      }
+
+      Module.onRuntimeInitialized = wasmReady;
     </script>
   </body>
 </html>
