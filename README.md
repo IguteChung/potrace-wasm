@@ -6,14 +6,15 @@
 
 ## Example
 
-![image](https://github.com/IguteChung/potrace-wasm/blob/master/doc/example.png)
+![image](https://github.com/IguteChung/potrace-wasm/blob/master/doc/kana.png)
+![image](https://github.com/IguteChung/potrace-wasm/blob/master/doc/kana.svg)
 
 ## Usage
 
 Build .wasm and js helper:
 
 ```sh
-emcc ../lib/*.c -s WASM=1 -s EXPORTED_FUNCTIONS='["_convert_svg"]' -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap']" -o potrace.js
+emcc ./lib/*.c -s WASM=1 -s EXPORTED_FUNCTIONS='["_convert_svg"]' -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap']" -o potrace.js
 ```
 
 Call the `convert_svg` in browser with canvas:
