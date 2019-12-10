@@ -1,48 +1,122 @@
 <html>
+  <head>
+    <style>
+      body {
+        margin: 30px;
+        background-color: #eee;
+      }
+
+      #drop {
+        border: 2px dashed #ccc;
+        width: 170px;
+        padding: 10px;
+        margin: 20px 0;
+        text-align: center;
+        border-radius: 5px;
+      }
+
+      #imageInput {
+        display: none;
+      }
+    </style>
+  </head>
   <body>
+    <header>
+      <h1>Potrace - WebAssembly</h1>
+    </header>
+    <article>
+      <p>
+        A web assembly porting of
+        <a href="http://potrace.sourceforge.net" target="_blank">Potrace</a>
+      </p>
+      <p>
+        <a href="https://github.com/IguteChung/potrace-wasm" target="_blank"
+          >Github</a
+        >
+      </p>
+      <input type="file" id="imageInput" accept="image/*" />
+      <div id="drop">
+        <a href="#" id="imageSelect">open an image</a> <br />
+        or drag an image here
+      </div>
+      <img id="imgele"></img>
+      <br /><br />
+      <div id="svgele"></div>
+    </article>
     <script src="potrace.js"></script>
     <script>
-      let imgElement = document.createElement("img"),
-        imgCanvas = document.createElement("canvas");
+      window.onload = function() {
+        let imageSelect = document.getElementById("imageSelect"),
+          imageInput = document.getElementById("imageInput"),
+          imgElement = document.getElementById("imgele"),
+          svgElement = document.getElementById("svgele");
+        let imgCanvas = document.createElement("canvas");
 
-      function drawSVG(svg) {
-        var parser = new DOMParser();
-        var dom = parser.parseFromString(svg, "text/xml");
-        document.body.appendChild(document.createElement("br"));
-        document.body.appendChild(dom.documentElement);
-      }
-
-      function wasmReady() {
-        imgElement.onload = imgOnload;
-        imgElement.src = "kana.png";
-      }
-
-      function imgOnload() {
-        imgCanvas.width = imgElement.width;
-        imgCanvas.height = imgElement.height;
-        var ctx = imgCanvas.getContext("2d");
-        ctx.drawImage(imgElement, 0, 0);
-        document.body.appendChild(imgCanvas);
-
-        let imagedata = ctx.getImageData(
-          0,
-          0,
-          imgCanvas.width,
-          imgCanvas.height
+        imageSelect.addEventListener(
+          "click",
+          function(e) {
+            imageInput.click();
+            e.preventDefault();
+          },
+          false
         );
 
-        let convertSVG = Module.cwrap("convert_svg", "string", [
-          "array",
-          "number",
-          "number"
-        ]);
-        let svg = convertSVG(imagedata.data, imgCanvas.width, imgCanvas.height);
-        console.log("js receives:", svg);
+        imageInput.addEventListener(
+          "change",
+          function(e) {
+            handleFiles(this.files);
+          },
+          false
+        );
 
-        drawSVG(svg);
-      }
+        function handleFiles(files) {
+          let fr = new FileReader();
+          fr.onload = function () {
+            imgElement.src = fr.result;
+          }
+          fr.readAsDataURL(files[0]);
+        }
 
-      Module.onRuntimeInitialized = wasmReady;
+        function drawSVG(svg) {
+          var parser = new DOMParser();
+          var dom = parser.parseFromString(svg, "text/xml");
+          svgElement.innerHTML = '';
+          svgElement.appendChild(dom.documentElement);
+        }
+
+        function wasmReady() {
+          imgElement.onload = imgOnload;
+          imgElement.src = "kana.png";
+        }
+
+        function imgOnload() {
+          imgCanvas.width = imgElement.width;
+          imgCanvas.height = imgElement.height;
+          var ctx = imgCanvas.getContext("2d");
+          ctx.drawImage(imgElement, 0, 0);
+
+          let imagedata = ctx.getImageData(
+            0,
+            0,
+            imgCanvas.width,
+            imgCanvas.height
+          );
+
+          let convertSVG = Module.cwrap("convert_svg", "string", [
+            "array",
+            "number",
+            "number"
+          ]);
+          let svg = convertSVG(
+            imagedata.data,
+            imgCanvas.width,
+            imgCanvas.height
+          );
+
+          drawSVG(svg);
+        }
+        Module.onRuntimeInitialized = wasmReady;
+      };
     </script>
   </body>
 </html>

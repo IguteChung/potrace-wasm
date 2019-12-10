@@ -10,8 +10,6 @@
 #include "bitmap.h"
 #include "backend_svg.h"
 
-#define UNDEF ((double)(1e30)) /* a value to represent "undefined" */
-
 /* ---------------------------------------------------------------------- */
 /* calculations with bitmap dimensions, positioning etc */
 
