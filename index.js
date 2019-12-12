@@ -2828,9 +2828,19 @@ function ready() {
  * @param config for customizing.
  */
 async function loadFromCanvas(canvas, config) {
-  let start = wrapStart();
   let ctx = canvas.getContext("2d");
   let imagedata = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  return loadFromImageData(imagedata, canvas.width, canvas.height, config);
+}
+
+/**
+ * @param imagedata to be converted for svg.
+ * @param width for the imageData.
+ * @param height for the imageData.
+ * @param config for customizing.
+ */
+async function loadFromImageData(imagedata, width, height, config) {
+  let start = wrapStart();
   let data = new Array(Math.ceil(imagedata.length / 32)).fill(0);
   let c = buildConfig(config);
 
@@ -2848,7 +2858,7 @@ async function loadFromCanvas(canvas, config) {
   }
 
   await ready();
-  return start(data, canvas.width, canvas.height, c.transform, c.pathonly);
+  return start(data, width, height, c.transform, c.pathonly);
 }
 
 /**
