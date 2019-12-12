@@ -27,14 +27,14 @@ loadFromCanvas(imgCanvas)
     .catch(err => console.log(err));
 ```
 
-## Build
+## Build from source
 
 Install [emsdk][emsdk]
 
 Build the wasm and js
 
 ```sh
-./build.sh
+npm run build
 ```
 
 ## License

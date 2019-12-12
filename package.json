@@ -1,19 +1,20 @@
 {
   "name": "potrace-wasm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Potrace Porting in Web Assembly",
-  "main": "potrace.js",
+  "main": "index.js",
   "directories": {
     "doc": "doc",
-    "example": "example",
-    "lib": "lib"
+    "src": "src",
+    "wasm": "wasm",
+    "example": "example"
   },
   "scripts": {
     "build": "./build.sh",
     "serve": "npm run build && ./example/serve.sh"
   },
   "files": [
-    "lib"
+    "index.js"
   ],
   "repository": {
     "type": "git",
