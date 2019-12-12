@@ -58,16 +58,13 @@ const char *start(uint8_t pixels[], int width, int height)
 {
     // initialize the bitmap with given pixels.
     potrace_bitmap_t *bm = bm_new(width, height);
-    for (int i = 0; i < width * height * 4; i += 4)
+    for (int i = 0; i < width * height; i++)
     {
-        int index = i / 4;
-        int x = index % width;
-        int y = height - (index / width) - 1;
-
-        // Relative luminance
-        int color = 0.2126 * pixels[i] + 0.7152 * pixels[i + 1] + 0.0722 * pixels[i + 2];
-        int a = pixels[i + 3];
-        BM_UPUT(bm, x, y, a != 0 && color < 128);
+        // each uint8_t contains 8 pixels from rightmost bit.
+        int x = i % width;
+        int y = height - (i / width) - 1;
+        uint8_t pixel = pixels[i / 8];
+        BM_UPUT(bm, x, y, pixel & (1 << (i % 8)));
     }
 
     // start the potrace algorithm.
