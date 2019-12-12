@@ -74,7 +74,7 @@ async function loadFromCanvas(canvas, config) {
 }
 
 /**
- * @returns wrapped function for potrace run.
+ * @returns wrapped function for start.
  */
 function wrapStart() {
   return cwrap("start", "string", [

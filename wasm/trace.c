@@ -1,7 +1,3 @@
-/* Copyright (C) 2001-2019 Peter Selinger.
-   This file is part of Potrace. It is free software and it is covered
-   by the GNU General Public License. See the file COPYING for details. */
-
 /* transform jaggy paths into smooth curves */
 
 #include <stdio.h>
@@ -812,11 +808,6 @@ static int adjust_vertices(privpath_t *pp)
     {
       /* minimize the quadratic form Q on the unit square */
       /* find intersection */
-
-#ifdef HAVE_GCC_LOOP_BUG
-      /* work around gcc bug #12243 */
-      free(NULL);
-#endif
 
       det = Q[0][0] * Q[1][1] - Q[0][1] * Q[1][0];
       if (det != 0.0)

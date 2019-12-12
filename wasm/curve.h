@@ -1,7 +1,3 @@
-/* Copyright (C) 2001-2019 Peter Selinger.
-   This file is part of Potrace. It is free software and it is covered
-   by the GNU General Public License. See the file COPYING for details. */
-
 #ifndef CURVE_H
 #define CURVE_H
 
@@ -15,7 +11,8 @@
    Beta is so that (.beta[i])[.vertex[i],.vertex[i+1]] = .c[i][2].
 */
 
-struct privcurve_s {
+struct privcurve_s
+{
   int n;            /* number of segments */
   int *tag;         /* tag[n]: POTRACE_CORNER or POTRACE_CURVETO */
   dpoint_t (*c)[3]; /* c[n][i]: control points. 
@@ -31,7 +28,8 @@ struct privcurve_s {
 };
 typedef struct privcurve_s privcurve_t;
 
-struct sums_s {
+struct sums_s
+{
   double x;
   double y;
   double x2;
@@ -45,20 +43,21 @@ typedef struct sums_s sums_t;
    Potrace algorithm. Backends only need to read the fcurve and fm
    fields of this data structure, but debugging backends may read
    other fields. */
-struct potrace_privpath_s {
+struct potrace_privpath_s
+{
   int len;
-  point_t *pt;     /* pt[len]: path as extracted from bitmap */
-  int *lon;        /* lon[len]: (i,lon[i]) = longest straight line from i */
+  point_t *pt; /* pt[len]: path as extracted from bitmap */
+  int *lon;    /* lon[len]: (i,lon[i]) = longest straight line from i */
 
-  int x0, y0;      /* origin for sums */
-  sums_t *sums;    /* sums[len+1]: cache for fast summing */
+  int x0, y0;   /* origin for sums */
+  sums_t *sums; /* sums[len+1]: cache for fast summing */
 
-  int m;           /* length of optimal polygon */
-  int *po;         /* po[m]: optimal polygon */
+  int m;   /* length of optimal polygon */
+  int *po; /* po[m]: optimal polygon */
 
   privcurve_t curve;   /* curve[m]: array of curve elements */
   privcurve_t ocurve;  /* ocurve[om]: array of curve elements */
-  privcurve_t *fcurve;  /* final curve: this points to either curve or
+  privcurve_t *fcurve; /* final curve: this points to either curve or
 		       ocurve. Do not free this separately. */
 };
 typedef struct potrace_privpath_s potrace_privpath_t;
@@ -74,4 +73,3 @@ int privcurve_init(privcurve_t *curve, int n);
 void privcurve_to_curve(privcurve_t *pc, potrace_curve_t *c);
 
 #endif /* CURVE_H */
-

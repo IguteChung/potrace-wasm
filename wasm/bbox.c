@@ -1,7 +1,3 @@
-/* Copyright (C) 2001-2019 Peter Selinger.
-   This file is part of Potrace. It is free software and it is covered
-   by the GNU General Public License. See the file COPYING for details. */
-
 /* figure out the true bounding box of a vector image */
 
 #include <math.h>

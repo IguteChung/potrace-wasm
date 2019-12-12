@@ -1,14 +1,7 @@
-/* Copyright (C) 2001-2019 Peter Selinger.
-   This file is part of Potrace. It is free software and it is covered
-   by the GNU General Public License. See the file COPYING for details. */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
 
 #include "potracelib.h"
 #include "curve.h"
