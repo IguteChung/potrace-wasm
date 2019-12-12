@@ -22,7 +22,7 @@ Call the helper methods
 ```sh
 import { loadFromCanvas } from "potrace-wasm";
 
-loadFromCanvas(imgCanvas)
+loadFromCanvas(canvas, config)
     .then(svg => drawSVG(svg))
     .catch(err => console.log(err));
 ```

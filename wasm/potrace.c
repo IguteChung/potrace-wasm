@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "potrace.h"
 #include "potracelib.h"
@@ -54,7 +55,12 @@ static void calc_dimensions(imginfo_t *imginfo, potrace_path_t *plist)
     trans_scale_to_size(&imginfo->trans, imginfo->width, imginfo->height);
 }
 
-const char *start(uint8_t pixels[], int width, int height)
+const char *start(
+    uint8_t pixels[],
+    int width,
+    int height,
+    uint8_t transform,
+    uint8_t pathonly)
 {
     // initialize the bitmap with given pixels.
     potrace_bitmap_t *bm = bm_new(width, height);
@@ -97,7 +103,11 @@ const char *start(uint8_t pixels[], int width, int height)
     char *buf;
     size_t len;
     FILE *stream = open_memstream(&buf, &len);
-    int r = page_svg(stream, st->plist, &imginfo);
+    svginfo_t svginfo = {
+        .transform = transform,
+        .pathonly = pathonly,
+    };
+    int r = page_svg(stream, st->plist, &imginfo, &svginfo);
     if (r)
     {
         fprintf(stderr, "page_svg error: %s\n", strerror(errno));

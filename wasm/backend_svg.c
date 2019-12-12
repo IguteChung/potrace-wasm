@@ -18,6 +18,15 @@
 
 #define UNIT 10
 
+struct transform_s
+{
+  double origx;
+  double origy;
+  double scalex;
+  double scaley;
+};
+typedef struct transform_s transform_t;
+
 /* ---------------------------------------------------------------------- */
 /* path-drawing auxiliary functions */
 
@@ -79,57 +88,106 @@ static void ship(FILE *fout, const char *fmt, ...)
   shiptoken(fout, p);
 }
 
-static void svg_moveto(FILE *fout, dpoint_t p)
+static void svg_moveto(FILE *fout, dpoint_t p, transform_t *t)
 {
   cur = unit(p);
+  long x = cur.x, y = cur.y;
+  if (t)
+  {
+    float tx = x * t->scalex + t->origx, ty = y * t->scaley + t->origy;
+    ship(fout, "M%.1f %.1f", tx, ty);
+  }
+  else
+  {
+    ship(fout, "M%ld %ld", x, y);
+  }
 
-  ship(fout, "M%ld %ld", cur.x, cur.y);
   lastop = 'M';
 }
 
-static void svg_rmoveto(FILE *fout, dpoint_t p)
+static void svg_rmoveto(FILE *fout, dpoint_t p, transform_t *t)
 {
   point_t q;
 
   q = unit(p);
-  ship(fout, "m%ld %ld", q.x - cur.x, q.y - cur.y);
+  long x = q.x - cur.x, y = q.y - cur.y;
+  if (t)
+  {
+    float tx = x * t->scalex, ty = y * t->scaley;
+    ship(fout, "m%.1f %.1f", tx, ty);
+  }
+  else
+  {
+    ship(fout, "m%ld %ld", x, y);
+  }
+
   cur = q;
   lastop = 'm';
 }
 
-static void svg_lineto(FILE *fout, dpoint_t p)
+static void svg_lineto(FILE *fout, dpoint_t p, transform_t *t)
 {
   point_t q;
 
   q = unit(p);
-
-  if (lastop != 'l')
+  long x = q.x - cur.x, y = q.y - cur.y;
+  if (t)
   {
-    ship(fout, "l%ld %ld", q.x - cur.x, q.y - cur.y);
+    float tx = x * t->scalex, ty = y * t->scaley;
+    char *str = "l%.1f %.1f";
+    if (lastop == 'l')
+    {
+      str++;
+    }
+    ship(fout, str, tx, ty);
   }
   else
   {
-    ship(fout, "%ld %ld", q.x - cur.x, q.y - cur.y);
+    char *str = "l%ld %ld";
+    if (lastop == 'l')
+    {
+      str++;
+    }
+    ship(fout, str, x, y);
   }
+
   cur = q;
   lastop = 'l';
 }
 
-static void svg_curveto(FILE *fout, dpoint_t p1, dpoint_t p2, dpoint_t p3)
+static void svg_curveto(FILE *fout, dpoint_t p1, dpoint_t p2, dpoint_t p3, transform_t *t)
 {
   point_t q1, q2, q3;
 
   q1 = unit(p1);
   q2 = unit(p2);
   q3 = unit(p3);
-
-  if (lastop != 'c')
+  long x1 = q1.x - cur.x, y1 = q1.y - cur.y,
+       x2 = q2.x - cur.x, y2 = q2.y - cur.y,
+       x3 = q3.x - cur.x, y3 = q3.y - cur.y;
+  if (t)
   {
-    ship(fout, "c%ld %ld %ld %ld %ld %ld", q1.x - cur.x, q1.y - cur.y, q2.x - cur.x, q2.y - cur.y, q3.x - cur.x, q3.y - cur.y);
+    float tx1 = x1 * t->scalex,
+          ty1 = y1 * t->scaley,
+          tx2 = x2 * t->scalex,
+          ty2 = y2 * t->scaley,
+          tx3 = x3 * t->scalex,
+          ty3 = y3 * t->scaley;
+    char *str = "c%.1f %.1f %.1f %.1f %.1f %.1f";
+    if (lastop == 'c')
+    {
+      str++;
+    }
+    ship(fout, str, tx1, ty1, tx2, ty2, tx3, ty3);
   }
   else
   {
-    ship(fout, "%ld %ld %ld %ld %ld %ld", q1.x - cur.x, q1.y - cur.y, q2.x - cur.x, q2.y - cur.y, q3.x - cur.x, q3.y - cur.y);
+    char *str = "c%ld %ld %ld %ld %ld %ld";
+    if (lastop == 'c')
+    {
+      str++;
+    }
+    ship(fout, str, x1, y1, x2, y2, x3, y3);
   }
   cur = q3;
   lastop = 'c';
@@ -140,7 +198,7 @@ static void svg_curveto(FILE *fout, dpoint_t p1, dpoint_t p2, dpoint_t p3)
 
 /* Explicit encoding. If abs is set, move to first coordinate
    absolutely. */
-static int svg_path(FILE *fout, potrace_curve_t *curve, int abs)
+static int svg_path(FILE *fout, potrace_curve_t *curve, int abs, transform_t *transform)
 {
   int i;
   dpoint_t *c;
@@ -149,11 +207,11 @@ static int svg_path(FILE *fout, potrace_curve_t *curve, int abs)
   c = curve->c[m - 1];
   if (abs)
   {
-    svg_moveto(fout, c[2]);
+    svg_moveto(fout, c[2], transform);
   }
   else
   {
-    svg_rmoveto(fout, c[2]);
+    svg_rmoveto(fout, c[2], transform);
   }
 
   for (i = 0; i < m; i++)
@@ -162,11 +220,11 @@ static int svg_path(FILE *fout, potrace_curve_t *curve, int abs)
     switch (curve->tag[i])
     {
     case POTRACE_CORNER:
-      svg_lineto(fout, c[1]);
-      svg_lineto(fout, c[2]);
+      svg_lineto(fout, c[1], transform);
+      svg_lineto(fout, c[2], transform);
       break;
     case POTRACE_CURVETO:
-      svg_curveto(fout, c[0], c[1], c[2]);
+      svg_curveto(fout, c[0], c[1], c[2], transform);
       break;
     }
   }
@@ -175,97 +233,39 @@ static int svg_path(FILE *fout, potrace_curve_t *curve, int abs)
   return 0;
 }
 
-/* produce a jaggy path - for debugging. If abs is set, move to first
-   coordinate absolutely. If abs is not set, move to first coordinate
-   relatively, and traverse path in the opposite direction. */
-static int svg_jaggy_path(FILE *fout, point_t *pt, int n, int abs)
-{
-  int i;
-  point_t cur, prev;
-
-  if (abs)
-  {
-    cur = prev = pt[n - 1];
-    svg_moveto(fout, dpoint(cur));
-    for (i = 0; i < n; i++)
-    {
-      if (pt[i].x != cur.x && pt[i].y != cur.y)
-      {
-        cur = prev;
-        svg_lineto(fout, dpoint(cur));
-      }
-      prev = pt[i];
-    }
-    svg_lineto(fout, dpoint(pt[n - 1]));
-  }
-  else
-  {
-    cur = prev = pt[0];
-    svg_rmoveto(fout, dpoint(cur));
-    for (i = n - 1; i >= 0; i--)
-    {
-      if (pt[i].x != cur.x && pt[i].y != cur.y)
-      {
-        cur = prev;
-        svg_lineto(fout, dpoint(cur));
-      }
-      prev = pt[i];
-    }
-    svg_lineto(fout, dpoint(pt[0]));
-  }
-  newline = 1;
-  shiptoken(fout, "z");
-  return 0;
-}
-
-static void write_paths_opaque(FILE *fout, potrace_path_t *tree)
+static void write_paths_transparent_rec(FILE *fout, potrace_path_t *tree, transform_t *transform, int pathonly)
 {
   potrace_path_t *p, *q;
 
   for (p = tree; p; p = p->sibling)
   {
-    column = fprintf(fout, "<path fill=\"#000000\" stroke=\"none\" d=\"");
+
+    if (!pathonly)
+    {
+      column = fprintf(fout, "<path d=\"");
+    }
     newline = 1;
     lastop = 0;
-    svg_path(fout, &p->curve, 1);
-    fprintf(fout, "\"/>");
+
+    svg_path(fout, &p->curve, 1, transform);
+
     for (q = p->childlist; q; q = q->sibling)
     {
-      column = fprintf(fout, "<path fill=\"#ffffff\" stroke=\"none\" d=\"");
-      newline = 1;
-      lastop = 0;
-      svg_path(fout, &q->curve, 1);
+      svg_path(fout, &q->curve, 0, transform);
+    }
+
+    if (!pathonly)
+    {
       fprintf(fout, "\"/>");
     }
-    for (q = p->childlist; q; q = q->sibling)
+    else
     {
-      write_paths_opaque(fout, q->childlist);
-    }
-  }
-}
-
-static void write_paths_transparent_rec(FILE *fout, potrace_path_t *tree)
-{
-  potrace_path_t *p, *q;
-
-  for (p = tree; p; p = p->sibling)
-  {
-    column = fprintf(fout, "<path d=\"");
-    newline = 1;
-    lastop = 0;
-
-    svg_path(fout, &p->curve, 1);
-
-    for (q = p->childlist; q; q = q->sibling)
-    {
-      svg_path(fout, &q->curve, 0);
+      fprintf(fout, " ");
     }
 
-    fprintf(fout, "\"/>");
-
     for (q = p->childlist; q; q = q->sibling)
     {
-      write_paths_transparent_rec(fout, q->childlist);
+      write_paths_transparent_rec(fout, q->childlist, transform, pathonly);
     }
   }
 }
@@ -274,9 +274,9 @@ static void write_paths_transparent_rec(FILE *fout, potrace_path_t *tree)
 /* Backend. */
 
 /* public interface for SVG */
-int page_svg(FILE *fout, potrace_path_t *plist, imginfo_t *imginfo)
+int page_svg(FILE *fout, potrace_path_t *plist, imginfo_t *imginfo, svginfo_t *svginfo)
 {
-
+  transform_t *transform = NULL;
   double bboxx = imginfo->trans.bb[0] + imginfo->lmar + imginfo->rmar;
   double bboxy = imginfo->trans.bb[1] + imginfo->tmar + imginfo->bmar;
   double origx = imginfo->trans.orig[0] + imginfo->lmar;
@@ -284,31 +284,53 @@ int page_svg(FILE *fout, potrace_path_t *plist, imginfo_t *imginfo)
   double scalex = imginfo->trans.scalex / UNIT;
   double scaley = -imginfo->trans.scaley / UNIT;
 
-  /* header */
-  fprintf(fout, "<?xml version=\"1.0\" standalone=\"no\"?>");
-  fprintf(fout, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20010904//EN\"");
-  fprintf(fout, " \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">");
-
-  /* set bounding box and namespace */
-  fprintf(fout, "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"");
-  fprintf(fout, " width=\"%f\" height=\"%f\" viewBox=\"0 0 %f %f\"",
-          bboxx, bboxy, bboxx, bboxy);
-  fprintf(fout, " preserveAspectRatio=\"xMidYMid meet\">");
-
-  /* use a "group" tag to establish coordinate system and style */
-  fprintf(fout, "<g transform=\"");
-  if (origx != 0 || origy != 0)
+  if (!svginfo->pathonly)
   {
-    fprintf(fout, "translate(%f,%f) ", origx, origy);
+    /* header */
+    fprintf(fout, "<?xml version=\"1.0\" standalone=\"no\"?>");
+    fprintf(fout, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 20010904//EN\"");
+    fprintf(fout, " \"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\">");
+
+    /* set bounding box and namespace */
+    fprintf(fout, "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"");
+    fprintf(fout, " width=\"%f\" height=\"%f\" viewBox=\"0 0 %f %f\"",
+            bboxx, bboxy, bboxx, bboxy);
+    fprintf(fout, " preserveAspectRatio=\"xMidYMid meet\">");
+
+    /* use a "group" tag to establish coordinate system and style */
+    if (svginfo->transform)
+    {
+      fprintf(fout, "<g transform=\"");
+      if (origx != 0 || origy != 0)
+      {
+        fprintf(fout, "translate(%f,%f) ", origx, origy);
+      }
+      fprintf(fout, "scale(%f,%f)\" ", scalex, scaley);
+      fprintf(fout, "fill=\"#000000\" stroke=\"none\">");
+    }
   }
-  fprintf(fout, "scale(%f,%f)\" ", scalex, scaley);
-  fprintf(fout, "fill=\"#000000\" stroke=\"none\">");
+  if (!svginfo->transform)
+  {
+    transform_t t = {
+        origx = origx,
+        origy = origy,
+        scalex = scalex,
+        scaley = scaley,
+    };
+    transform = &t;
+  }
 
-  write_paths_transparent_rec(fout, plist);
+  write_paths_transparent_rec(fout, plist, transform, svginfo->pathonly);
 
-  /* write footer */
-  fprintf(fout, "</g>");
-  fprintf(fout, "</svg>");
+  if (!svginfo->pathonly)
+  {
+    /* write footer */
+    if (svginfo->transform)
+    {
+      fprintf(fout, "</g>");
+    }
+    fprintf(fout, "</svg>");
+  }
   fflush(fout);
 
   return 0;
