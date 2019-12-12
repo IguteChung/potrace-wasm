@@ -2876,6 +2876,6 @@ function wrapStart() {
 
 // export the functions in server env.
 if (typeof module !== "undefined") {
-  module.exports = { loadFromCanvas };
+  module.exports = { loadFromCanvas, loadFromImageData };
 }
 
