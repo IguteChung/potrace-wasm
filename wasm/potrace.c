@@ -54,7 +54,7 @@ static void calc_dimensions(imginfo_t *imginfo, potrace_path_t *plist)
     trans_scale_to_size(&imginfo->trans, imginfo->width, imginfo->height);
 }
 
-const char *convert_svg(uint8_t pixels[], int width, int height)
+const char *start(uint8_t pixels[], int width, int height)
 {
     // initialize the bitmap with given pixels.
     potrace_bitmap_t *bm = bm_new(width, height);

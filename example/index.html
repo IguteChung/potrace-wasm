@@ -43,14 +43,16 @@
       <br /><br />
       <div id="svgele"></div>
     </article>
-    <script src="potrace.js"></script>
+    <script src="index.js"></script>
     <script>
       window.onload = function() {
         let imageSelect = document.getElementById("imageSelect"),
           imageInput = document.getElementById("imageInput"),
           imgElement = document.getElementById("imgele"),
           svgElement = document.getElementById("svgele");
-        let imgCanvas = document.createElement("canvas");
+
+        imgElement.onload = imgOnload;
+        imgElement.src = "kana.png";
 
         imageSelect.addEventListener(
           "click",
@@ -84,38 +86,17 @@
           svgElement.appendChild(dom.documentElement);
         }
 
-        function wasmReady() {
-          imgElement.onload = imgOnload;
-          imgElement.src = "kana.png";
-        }
-
         function imgOnload() {
+          let imgCanvas = document.createElement("canvas")
           imgCanvas.width = imgElement.width;
           imgCanvas.height = imgElement.height;
-          var ctx = imgCanvas.getContext("2d");
+          let ctx = imgCanvas.getContext("2d");
           ctx.drawImage(imgElement, 0, 0);
 
-          let imagedata = ctx.getImageData(
-            0,
-            0,
-            imgCanvas.width,
-            imgCanvas.height
-          );
-
-          let convertSVG = Module.cwrap("convert_svg", "string", [
-            "array",
-            "number",
-            "number"
-          ]);
-          let svg = convertSVG(
-            imagedata.data,
-            imgCanvas.width,
-            imgCanvas.height
-          );
-
-          drawSVG(svg);
+          loadFromCanvas(imgCanvas)
+            .then(svg => drawSVG(svg))
+            .catch(err => console.log(err));
         }
-        Module.onRuntimeInitialized = wasmReady;
       };
     </script>
   </body>

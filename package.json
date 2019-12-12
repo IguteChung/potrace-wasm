@@ -1,0 +1,28 @@
+{
+  "name": "potrace-wasm",
+  "version": "1.0.3",
+  "description": "Potrace Porting in Web Assembly",
+  "main": "potrace.js",
+  "directories": {
+    "doc": "doc",
+    "example": "example",
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "./build.sh",
+    "serve": "npm run build && ./example/serve.sh"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IguteChung/potrace-wasm.git"
+  },
+  "author": "frank chung",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/IguteChung/potrace-wasm/issues"
+  },
+  "homepage": "https://github.com/IguteChung/potrace-wasm#readme"
+}

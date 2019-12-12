@@ -1,5 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd $DIR && emcc ./lib/*.c -Oz -s WASM=1 -s EXPORTED_FUNCTIONS='["_convert_svg"]' -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap']" -s "TOTAL_MEMORY=134217728" -s "TOTAL_STACK=67108864" -s "ALLOW_MEMORY_GROWTH=1" -o potrace.js
+cd $DIR && rm -f lib/*
+
+cd $DIR && emcc wasm/*.c --post-js src/potrace.js -s WASM=1 -s EXPORTED_FUNCTIONS='["_start"]' -s "TOTAL_MEMORY=134217728" -s "TOTAL_STACK=67108864" -s "ALLOW_MEMORY_GROWTH=1" -s "SINGLE_FILE=1" -o index.js
