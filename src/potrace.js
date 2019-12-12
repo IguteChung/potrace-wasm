@@ -68,7 +68,7 @@ async function loadFromImageData(imagedata, width, height, config) {
   let data = new Array(Math.ceil(imagedata.length / 32)).fill(0);
   let c = buildConfig(config);
 
-  for (i = 0; i < imagedata.length; i += 4) {
+  for (let i = 0; i < imagedata.length; i += 4) {
     let r = imagedata[i],
       g = imagedata[i + 1],
       b = imagedata[i + 2],
@@ -84,7 +84,7 @@ async function loadFromImageData(imagedata, width, height, config) {
   await ready();
   let result = start(data, width, height, c.transform, c.pathonly);
 
-  if (config.pathonly) {
+  if (c.pathonly) {
     return result
       .split("M")
       .filter(path => path)
