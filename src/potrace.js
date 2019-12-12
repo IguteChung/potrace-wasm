@@ -48,6 +48,7 @@ function ready() {
 /**
  * @param canvas to be converted for svg.
  * @param config for customizing.
+ * @returns promise that emits a svg string or path data array.
  */
 async function loadFromCanvas(canvas, config) {
   let ctx = canvas.getContext("2d");
@@ -60,6 +61,7 @@ async function loadFromCanvas(canvas, config) {
  * @param width for the imageData.
  * @param height for the imageData.
  * @param config for customizing.
+ * @returns promise that emits a svg string or path data array.
  */
 async function loadFromImageData(imagedata, width, height, config) {
   let start = wrapStart();
@@ -80,7 +82,15 @@ async function loadFromImageData(imagedata, width, height, config) {
   }
 
   await ready();
-  return start(data, width, height, c.transform, c.pathonly);
+  let result = start(data, width, height, c.transform, c.pathonly);
+
+  if (config.pathonly) {
+    return result
+      .split("M")
+      .filter(path => path)
+      .map(path => "M" + path);
+  }
+  return result;
 }
 
 /**
