@@ -6,11 +6,13 @@
  * @param colorFilter return true if given pixel will be traced.
  * @param transform whether add the <transform /> tag to reduce generated svg length.
  * @param pathonly only returns concated path data.
+ * @param turdsize suppress speckles of up to this many pixels.
  */
 const defaultConfig = {
   colorFilter: (r, g, b, a) => a && 0.2126 * r + 0.7152 * g + 0.0722 * b < 128,
   transform: true,
-  pathonly: false
+  pathonly: false,
+  turdsize: 2,
 };
 
 /**
@@ -34,7 +36,7 @@ function buildConfig(config) {
  * @returns promise to wait for wasm loaded.
  */
 function ready() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     if (runtimeInitialized) {
       resolve();
       return;
@@ -82,13 +84,13 @@ async function loadFromImageData(imagedata, width, height, config) {
   }
 
   await ready();
-  let result = start(data, width, height, c.transform, c.pathonly);
+  let result = start(data, width, height, c.transform, c.pathonly, c.turdsize);
 
   if (c.pathonly) {
     return result
       .split("M")
-      .filter(path => path)
-      .map(path => "M" + path);
+      .filter((path) => path)
+      .map((path) => "M" + path);
   }
   return result;
 }
@@ -102,7 +104,8 @@ function wrapStart() {
     "number", // width
     "number", // height
     "number", // transform
-    "number" // pathonly
+    "number", // pathonly
+    "numner", // turdsize
   ]);
 }
 
