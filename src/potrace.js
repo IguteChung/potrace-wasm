@@ -105,7 +105,7 @@ function wrapStart() {
     "number", // height
     "number", // transform
     "number", // pathonly
-    "numner", // turdsize
+    "number", // turdsize
   ]);
 }
 
