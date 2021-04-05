@@ -2888,4 +2888,3 @@ function wrapStart() {
 }
 
 export { loadFromCanvas, loadFromImageData };
-
