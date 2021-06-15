@@ -57,7 +57,9 @@ const char *start(
     int height,
     uint8_t transform,
     uint8_t pathonly,
-    uint8_t turdsize)
+    uint8_t turdsize,
+    float alphamax
+    )
 {
     // initialize the bitmap with given pixels.
     potrace_bitmap_t *bm = bm_new(width, height);
@@ -74,9 +76,9 @@ const char *start(
     potrace_param_t param = {
         .turdsize = turdsize,
         .turnpolicy = 4,
-        .alphamax = 1,
-        .opticurve = 1,
-        .opttolerance = 0.2,
+        .alphamax = alphamax,
+        .opticurve = 0,
+        .opttolerance = 1,
     };
 
     potrace_state_t *st = potrace_trace(&param, bm);

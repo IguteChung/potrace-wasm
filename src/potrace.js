@@ -7,12 +7,14 @@
  * @param transform whether add the <transform /> tag to reduce generated svg length.
  * @param pathonly only returns concated path data.
  * @param turdsize suppress speckles of up to this many pixels.
+ * @param alphamax corner threshold parameter.
  */
-const defaultConfig = {
+ const defaultConfig = {
   colorFilter: (r, g, b, a) => a && 0.2126 * r + 0.7152 * g + 0.0722 * b < 128,
   transform: true,
   pathonly: false,
   turdsize: 2,
+  alphamax: 1
 };
 
 /**
@@ -84,7 +86,8 @@ async function loadFromImageData(imagedata, width, height, config) {
   }
 
   await ready();
-  let result = start(data, width, height, c.transform, c.pathonly, c.turdsize);
+  console.log(c)
+  let result = start(data, width, height, c.transform, c.pathonly, c.turdsize, c.alphamax);
 
   if (c.pathonly) {
     return result
@@ -105,7 +108,8 @@ function wrapStart() {
     "number", // height
     "number", // transform
     "number", // pathonly
-    "numner", // turdsize
+    "number", // turdsize
+    "number" // alphamax
   ]);
 }
 
